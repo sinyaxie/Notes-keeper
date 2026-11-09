@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="sw">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#065f2c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Sinyaxie Notes Vault</title>
+
+<style>
+:root{
+ --g1:#044d22;--g2:#0b7a35;--g3:#16a34a;
+ --y:#ffd60a;--y2:#fff3a3;
+ --bg:#fff9d6;--card:#ffffff;--text:#10301b;--muted:#587463;--border:#b9e2c4;
+ --shadow:0 4px 18px #0b7a352a;
+ --input:#ffffff;--tag-bg:#ffd60a;--tag-text:#044d22;--num:#0b7a35;
+}
+:root[data-theme="dark"]{
+ --bg:#04170b;--card:#0b2d15;--text:#f6ffdc;--muted:#a5c9ae;--border:#1a5a2b;
+ --shadow:0 4px 18px #00000066;
+ --input:#082411;--tag-bg:#ffd60a;--tag-text:#044d22;--num:#ffd60a;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Arial,Helvetica,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+button{font:inherit}
+
+header{
+ background:linear-gradient(135deg,var(--g1),var(--g3));
+ color:#fff;padding:22px 18px 26px;
+ border-radius:0 0 28px 28px;
+ border-bottom:6px solid var(--y);
+ box-shadow:0 6px 22px #044d2255;
+}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;max-width:850px;margin:auto}
+.brand{font-size:22px;font-weight:900;letter-spacing:.5px}
+.brand span{color:var(--y)}
+header p{font-size:12px;color:#d6f5de;margin:7px auto 0;max-width:850px}
+.hbtns{display:flex;gap:8px}
+.icon-btn{
+ background:var(--y);color:var(--g1);border:0;border-radius:50%;
+ width:40px;height:40px;font-size:18px;cursor:pointer;font-weight:bold;
+ box-shadow:0 2px 8px #0004;
+}
+.install{display:none;background:var(--y);color:var(--g1);border:0;border-radius:20px;padding:0 14px;height:40px;font-weight:bold;cursor:pointer;font-size:13px}
+
+.container{max-width:850px;margin:auto;padding:18px}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:6px}
+.stat,.panel{background:var(--card);border-radius:16px;padding:16px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.stat{border-left:6px solid var(--y);padding:13px}
+.stat small{color:var(--muted);font-size:10px;font-weight:bold;letter-spacing:.5px}
+.stat h2{font-size:22px;margin-top:6px;color:var(--num)}
+
+.section-title{
+ font-size:18px;font-weight:900;margin:26px 0 13px;color:var(--text);
+ display:inline-block;border-bottom:5px solid var(--y);padding-bottom:3px
+}
+
+input,select{
+ width:100%;padding:13px;border:2px solid var(--border);border-radius:11px;
+ background:var(--input);color:var(--text);outline:none;font:inherit
+}
+input:focus,select:focus{border-color:var(--g3);box-shadow:0 0 0 3px #ffd60a88}
+label{font-size:13px;font-weight:bold;display:block;margin:13px 0 7px;color:var(--text)}
+
+.upload{
+ border:3px dashed var(--g3);padding:24px;text-align:center;border-radius:15px;
+ background:linear-gradient(135deg,#fffbe0,#e6f9ea);cursor:pointer;color:#10301b;
+ transition:.15s
+}
+:root[data-theme="dark"] .upload{background:linear-gradient(135deg,#0d3a1a,#12461f);color:#f6ffdc}
+.upload.drag{background:var(--y);border-color:var(--g1)}
+.upload input{display:none}
+.upload strong{color:var(--g2)}
+:root[data-theme="dark"] .upload strong{color:var(--y)}
+.check{display:flex;align-items:center;gap:9px;margin-top:14px;font-size:13px;font-weight:bold}
+.check input{width:20px;height:20px;accent-color:var(--g2)}
+
+.primary{
+ background:var(--y);color:var(--g1);border:0;padding:15px;border-radius:12px;width:100%;
+ font-weight:900;margin-top:16px;cursor:pointer;font-size:16px;
+ box-shadow:0 4px 0 #c9a600;
+}
+.primary:active{transform:translateY(2px);box-shadow:0 2px 0 #c9a600}
+.primary:disabled{opacity:.55}
+.green{background:var(--g2);color:#fff;border:0;padding:13px;border-radius:11px;font-weight:bold;cursor:pointer;flex:1;min-width:130px;font-size:14px}
+.green.alt{background:var(--y);color:var(--g1)}
+.green:disabled{opacity:.55}
+
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.bar{height:14px;background:#d9efdf;border-radius:10px;overflow:hidden;margin-top:9px;border:1px solid var(--border)}
+:root[data-theme="dark"] .bar{background:#0a2411}
+.bar div{height:100%;width:0;background:linear-gradient(90deg,var(--y),var(--g3));transition:width .4s}
+.small{font-size:12px;color:var(--muted);margin-top:7px;line-height:1.5}
+.warn{background:var(--y2);color:#5a4500;border-left:5px solid var(--y);padding:10px 12px;border-radius:10px;font-size:12px;margin-top:12px;font-weight:bold}
+:root[data-theme="dark"] .warn{background:#3b3300;color:#ffe98a}
+.ok{background:#dff7e6;color:#064d22;border-left:5px solid var(--g3)}
+:root[data-theme="dark"] .ok{background:#0e3c1b;color:#b8f5c8}
+
+.search{margin-bottom:12px}
+.filters{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.filters .full{grid-column:1/-1}
+
+.note{
+ background:var(--card);padding:13px;border-radius:15px;margin-bottom:12px;
+ box-shadow:var(--shadow);border:1px solid var(--border);border-left:6px solid var(--g3)
+}
+.note-top{display:flex;gap:12px;align-items:flex-start}
+.thumb{
+ width:62px;height:62px;flex:none;border-radius:12px;background:var(--y2);
+ display:flex;align-items:center;justify-content:center;font-size:28px;overflow:hidden;border:2px solid var(--y)
+}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.info{min-width:0;flex:1}
+.note h3{font-size:15px;overflow-wrap:anywhere;color:var(--text)}
+.note small{color:var(--muted);display:block;margin-top:5px;overflow-wrap:anywhere}
+.tag{display:inline-block;background:var(--tag-bg);color:var(--tag-text);padding:5px 10px;border-radius:20px;font-size:11px;margin-top:9px;font-weight:bold}
+.actions{display:flex;gap:8px;margin-top:13px;flex-wrap:wrap}
+.actions button{border:0;padding:10px 13px;border-radius:9px;font-size:12px;cursor:pointer;font-weight:bold}
+.open{background:var(--g2);color:#fff}
+.edit{background:var(--y);color:var(--g1)}
+.download{background:#dff7e6;color:var(--g1)}
+:root[data-theme="dark"] .download{background:#14502a;color:#e8ffd0}
+.delete{background:#fff0f0;color:#c62828}
+
+.empty{text-align:center;padding:35px 10px;color:var(--muted)}
+.empty div{font-size:40px;margin-bottom:10px}
+
+footer{text-align:center;padding:26px;color:var(--muted);font-size:12px}
+footer b{color:var(--g2)}
+
+.toast{
+ position:fixed;bottom:22px;left:50%;transform:translateX(-50%);
+ background:var(--g1);color:var(--y);padding:13px 18px;border-radius:12px;
+ display:none;z-index:100;font-size:13px;max-width:90%;font-weight:bold;
+ border:2px solid var(--y);box-shadow:0 6px 20px #0006;text-align:center
+}
+
+.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:12px;z-index:50}
+.modal.show{display:flex}
+.box{background:var(--card);border-radius:18px;width:100%;max-width:720px;max-height:94vh;display:flex;flex-direction:column;overflow:hidden;border:3px solid var(--y)}
+.box-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;background:linear-gradient(135deg,var(--g1),var(--g3));color:#fff}
+.box-head h3{font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.box-head button{background:var(--y);color:var(--g1);border:0;border-radius:50%;width:34px;height:34px;font-weight:bold;cursor:pointer;flex:none}
+.box-body{padding:14px;overflow:auto;flex:1}
+.viewer .box{height:94vh}
+.viewer .box-body{padding:0;background:#111;display:flex;flex-direction:column}
+.viewer iframe{width:100%;flex:1;border:0;background:#fff;min-height:50vh}
+.viewer .imgwrap{overflow:auto;flex:1;display:flex;align-items:flex-start;justify-content:center}
+.viewer img{max-width:100%;height:auto;cursor:zoom-in}
+.viewer img.zoom{max-width:none;width:220%;cursor:zoom-out}
+.viewer-foot{display:flex;gap:8px;padding:10px;background:var(--card);flex-wrap:wrap}
+</style>
+</head>
+
+<body>
+
+<header>
+ <div class="top">
+  <div class="brand">SINYAXIE <span>NOTES VAULT</span></div>
+  <div class="hbtns">
+   <button class="install" id="installBtn">📲 Install</button>
+   <button class="icon-btn" id="themeBtn" title="Dark / Light">🌙</button>
+  </div>
+ </div>
+ <p>Your academic materials. One safe place.</p>
+</header>
+
+<main class="container">
+
+ <div class="stats">
+  <div class="stat"><small>NOTES</small><h2 id="total">0</h2></div>
+  <div class="stat"><small>COURSES</small><h2 id="courses">0</h2></div>
+  <div class="stat"><small>UKUBWA</small><h2 id="notesSize">0 MB</h2></div>
+ </div>
+
+ <h2 class="section-title">🛡️ Usalama wa Data</h2>
+ <div class="panel">
+  <small class="small" style="margin:0">Hifadhi iliyotumika kwenye simu</small>
+  <div class="bar"><div id="storageBar"></div></div>
+  <p class="small" id="storageText">Inapima...</p>
+
+  <div class="warn" id="persistBox">Inakagua ulinzi wa data...</div>
+  <div class="warn" id="backupBox">Inakagua backup...</div>
+
+  <div class="row">
+   <button class="green" id="exportBtn" type="button">⬇️ Export Backup</button>
+   <button class="green alt" id="importBtn" type="button">⬆️ Import Backup</button>
+  </div>
+  <input type="file" id="importFile" accept=".json,application/json" style="display:none">
+  <p class="small">Backup ni faili moja (.json) lenye notes zako zote. Ihifadhi WhatsApp, Google Drive au email yako.</p>
+ </div>
+
+ <h2 class="section-title">＋ Add New Notes</h2>
+
+ <div class="panel">
+  <form id="noteForm">
+
+   <label>Note Title</label>
+   <input id="title" placeholder="e.g. Introduction to Database" required>
+
+   <label>Course / Subject</label>
+   <input id="course" list="courseList" placeholder="e.g. Data Communication" required>
+   <datalist id="courseList"></datalist>
+
+   <label>Topic (Optional)</label>
+   <input id="topic" placeholder="e.g. Network Topologies">
+
+   <label>Category</label>
+   <select id="category">
+    <option>Lecture Notes</option>
+    <option>Assignments</option>
+    <option>Tests & Quizzes</option>
+    <option>Revision</option>
+    <option>Past Papers</option>
+    <option>Other</option>
+   </select>
+
+   <label>Choose PDF or Images</label>
+   <label class="upload" id="dropzone">
+    <div style="font-size:32px">📁</div>
+    <strong>Tap to select files</strong>
+    <p style="font-size:12px;opacity:.75;margin-top:7px" id="fileLabel">PDF, JPG, PNG — au buruta (drag) faili hapa</p>
+    <input id="files" type="file" accept=".pdf,application/pdf,image/*" multiple>
+   </label>
+
+   <label class="check"><input type="checkbox" id="compress" checked> Punguza ukubwa wa picha (inaokoa storage)</label>
+
+   <button class="primary" id="saveBtn" type="submit">Save My Notes</button>
+
+  </form>
+ </div>
+
+ <h2 class="section-title">📚 My Notes Library</h2>
+
+ <input class="search" id="search" placeholder="🔍 Search notes, course or topic...">
+
+ <div class="filters">
+  <select id="filterCourse"><option value="">All Courses</option></select>
+  <select id="filterCategory">
+   <option value="">All Categories</option>
+   <option>Lecture Notes</option>
+   <option>Assignments</option>
+   <option>Tests & Quizzes</option>
+   <option>Revision</option>
+   <option>Past Papers</option>
+   <option>Other</option>
+  </select>
+  <select id="sort" class="full">
+   <option value="new">Panga: Mpya kwanza</option>
+   <option value="old">Panga: Za zamani kwanza</option>
+   <option value="title">Panga: Jina (A–Z)</option>
+   <option value="course">Panga: Course (A–Z)</option>
+   <option value="size">Panga: Ukubwa (kubwa kwanza)</option>
+  </select>
+ </div>
+
+ <div id="library" style="margin-top:15px"></div>
+
+</main>
+
+<footer>
+ <b>Sinyaxie Notes Vault</b> © 2026<br>
+ Organize your studies. Prepare for success.
+</footer>
+
+<div class="toast" id="toast"></div>
+
+<!-- Viewer -->
+<div class="modal viewer" id="viewer">
+ <div class="box">
+  <div class="box-head"><h3 id="viewTitle"></h3><button id="viewClose" type="button">✕</button></div>
+  <div class="box-body" id="viewBody"></div>
+  <div class="viewer-foot">
+   <button class="green" id="viewDownload" type="button">Download</button>
+   <button class="green alt" id="viewTab" type="button">Fungua tab mpya</button>
+  </div>
+ </div>
+</div>
+
+<!-- Edit -->
+<div class="modal" id="editModal">
+ <div class="box">
+  <div class="box-head"><h3>✏️ Badilisha Note</h3><button id="editClose" type="button">✕</button></div>
+  <div class="box-body">
+   <form id="editForm">
+    <label style="margin-top:0">Note Title</label>
+    <input id="eTitle" required>
+    <label>Course / Subject</label>
+    <input id="eCourse" list="courseList" required>
+    <label>Topic</label>
+    <input id="eTopic">
+    <label>Category</label>
+    <select id="eCategory">
+     <option>Lecture Notes</option>
+     <option>Assignments</option>
+     <option>Tests & Quizzes</option>
+     <option>Revision</option>
+     <option>Past Papers</option>
+     <option>Other</option>
+    </select>
+    <button class="primary" type="submit">Save Changes</button>
+   </form>
+  </div>
+ </div>
+</div>
+
+<script>
+const DB_NAME="SinyaxieNotesVault";
+const STORE="notes";
+const DEFAULT_COURSES=["Data Communication","Database","Accounting","Economics","Business Statistics","Business Law","Web Development","Operating Systems","JavaScript"];
+let db,notes=[],busy=false,pending=[];
+let viewUrl=null,viewNote=null,editId=null,deferredInstall=null;
+
+const $=id=>document.getElementById(id);
+
+/* ---------- helpers ---------- */
+function toast(msg,ms){
+ const el=$("toast");
+ el.textContent=msg;
+ el.style.display="block";
+ clearTimeout(toast.t);
+ toast.t=setTimeout(()=>el.style.display="none",ms||3000);
+}
+function fmtSize(b){
+ if(!b)return "0 KB";
+ if(b<1024*1024)return Math.max(1,Math.round(b/1024))+" KB";
+ if(b<1024*1024*1024)return (b/1048576).toFixed(1)+" MB";
+ return (b/1073741824).toFixed(2)+" GB";
+}
+function store(k,v){try{if(v===undefined)return localStorage.getItem(k);localStorage.setItem(k,v)}catch(e){return null}}
+function isPdf(n){return n.fileType==="application/pdf"||/\.pdf$/i.test(n.fileName||"")}
+function isImage(n){return (n.fileType||"").startsWith("image/")}
+function dupKey(name,size){return name.toLowerCase()+"|"+size}
+
+/* ---------- database ---------- */
+function openDB(){
+ return new Promise((resolve,reject)=>{
+  const r=indexedDB.open(DB_NAME,1);
+  r.onupgradeneeded=e=>{
+   const d=e.target.result;
+   if(!d.objectStoreNames.contains(STORE))d.createObjectStore(STORE,{keyPath:"id"});
+  };
+  r.onsuccess=e=>{db=e.target.result;resolve()};
+  r.onerror=()=>reject(r.error);
+ });
+}
+function run(mode,fn){
+ return new Promise((resolve,reject)=>{
+  const t=db.transaction(STORE,mode);
+  const s=t.objectStore(STORE);
+  let out;
+  try{out=fn(s)}catch(e){reject(e);return}
+  t.oncomplete=()=>resolve(out&&"result" in out?out.result:out);
+  t.onerror=()=>reject(t.error);
+  t.onabort=()=>reject(t.error);
+ });
+}
+async function refresh(){
+ notes=await run("readonly",s=>s.getAll());
+ render();
+ updateStorage();
+}
+
+/* ---------- images: thumbnail + compress ---------- */
+async function bitmap(file){
+ try{return await createImageBitmap(file,{imageOrientation:"from-image"})}
+ catch(e){return await createImageBitmap(file)}
+}
+async function makeThumb(file){
+ if(!(file.type||"").startsWith("image/"))return "";
+ try{
+  const b=await bitmap(file);
+  const max=160,sc=Math.min(1,max/Math.max(b.width,b.height));
+  const c=document.createElement("canvas");
+  c.width=Math.max(1,Math.round(b.width*sc));
+  c.height=Math.max(1,Math.round(b.height*sc));
+  c.getContext("2d").drawImage(b,0,0,c.width,c.height);
+  b.close&&b.close();
+  return c.toDataURL("image/jpeg",0.7);
+ }catch(e){return ""}
+}
+async function compressImage(file){
+ if(!/^image\/(jpeg|png|webp)$/.test(file.type)||file.size<400*1024)return file;
+ try{
+  const b=await bitmap(file);
+  const max=1800,sc=Math.min(1,max/Math.max(b.width,b.height));
+  const c=document.createElement("canvas");
+  c.width=Math.round(b.width*sc);
+  c.height=Math.round(b.height*sc);
+  const ctx=c.getContext("2d");
+  ctx.fillStyle="#fff";ctx.fillRect(0,0,c.width,c.height);
+  ctx.drawImage(b,0,0,c.width,c.height);
+  b.close&&b.close();
+  const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",0.82));
+  if(blob&&blob.size<file.size){
+   return new File([blob],file.name.replace(/\.[^.]+$/,"")+".jpg",{type:"image/jpeg"});
+  }
+ }catch(e){}
+ return file;
+}
+
+/* ---------- selecting files ---------- */
+function setPending(files){
+ pending=files;
+ const label=$("fileLabel");
+ if(!files.length){label.textContent="PDF, JPG, PNG — au buruta (drag) faili hapa";return}
+ const total=files.reduce((a,f)=>a+f.size,0);
+ label.textContent=files.length+" faili ("+fmtSize(total)+"): "+files.map(f=>f.name).join(", ");
+}
+$("files").addEventListener("change",()=>setPending([...$("files").files]));
+
+const dz=$("dropzone");
+["dragenter","dragover"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add("drag")}));
+["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove("drag")}));
+dz.addEventListener("drop",e=>{
+ const files=[...(e.dataTransfer&&e.dataTransfer.files||[])];
+ if(files.length)setPending(files);
+});
+
+/* ---------- save ---------- */
+$("noteForm").addEventListener("submit",async e=>{
+ e.preventDefault();
+ if(busy)return;
+
+ const title=$("title").value.trim();
+ const course=$("course").value.trim();
+ const topic=$("topic").value.trim();
+ const category=$("category").value;
+ const files=pending.slice();
+
+ if(!files.length){toast("Tafadhali chagua PDF au picha kwanza.");return}
+
+ for(const f of files){
+  const okType=(f.type||"").startsWith("image/")||f.type==="application/pdf"||/\.pdf$/i.test(f.name);
+  if(!okType){toast("PDF na picha tu ndizo zinazokubalika.");return}
+ }
+
+ busy=true;
+ $("saveBtn").disabled=true;
+ $("saveBtn").textContent="Saving...";
+
+ let saved=0,skipped=0,failed=false;
+ const seen=new Set(notes.map(n=>dupKey(n.fileName,n.origSize||n.fileSize)));
+
+ try{
+  for(let file of files){
+   const key=dupKey(file.name,file.size);
+   if(seen.has(key)){skipped++;continue}
+
+   const origName=file.name,origSize=file.size;
+   if(!file.type&&/\.pdf$/i.test(file.name))file=new File([file],file.name,{type:"application/pdf"});
+   if($("compress").checked)file=await compressImage(file);
+   const thumb=await makeThumb(file);
+
+   const note={
+    id:crypto.randomUUID(),
+    title:files.length>1?title+" - "+origName:title,
+    course,topic,category,
+    fileName:file.name,
+    fileType:file.type,
+    fileSize:file.size,
+    origSize,
+    thumb,
+    file,
+    date:new Date().toISOString()
+   };
+   await run("readwrite",s=>s.add(note));
+   seen.add(key);
+   saved++;
+  }
+ }catch(err){
+  console.error(err);
+  failed=true;
+  toast("Storage imejaa au kuna hitilafu. Fanya Backup kisha futa notes zisizo muhimu.",4500);
+ }
+
+ if(saved>0){
+  $("noteForm").reset();
+  setPending([]);
+  askPersist();
+ }
+ await refresh();
+ if(!failed){
+  if(saved&&skipped)toast(saved+" zimehifadhiwa 🎉 · "+skipped+" zilikuwepo tayari (zimerukwa)",4000);
+  else if(saved)toast("Notes saved successfully! 🎉");
+  else if(skipped)toast("Faili hizi zipo tayari kwenye library yako.");
+ }
+ busy=false;
+ $("saveBtn").disabled=false;
+ $("saveBtn").textContent="Save My Notes";
+});
+
+/* ---------- render ---------- */
+function render(){
+ const query=$("search").value.toLowerCase();
+ const selCourse=$("filterCourse").value;
+ const selCat=$("filterCategory").value;
+
+ $("total").textContent=notes.length;
+ const courseNames=[...new Set(notes.map(n=>n.course))].sort((a,b)=>a.localeCompare(b));
+ $("courses").textContent=courseNames.length;
+ $("notesSize").textContent=fmtSize(notes.reduce((a,n)=>a+(n.fileSize||0),0));
+
+ const fc=$("filterCourse");
+ fc.innerHTML='<option value="">All Courses</option>';
+ courseNames.forEach(c=>{const o=document.createElement("option");o.value=c;o.textContent=c;fc.appendChild(o)});
+ fc.value=courseNames.includes(selCourse)?selCourse:"";
+
+ const dl=$("courseList");
+ dl.innerHTML="";
+ [...new Set([...DEFAULT_COURSES,...courseNames])].sort().forEach(c=>{
+  const o=document.createElement("option");o.value=c;dl.appe
